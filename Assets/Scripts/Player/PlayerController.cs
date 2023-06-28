@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 public class PlayerController : MonoBehaviour
 {   
@@ -12,6 +13,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float moveSpeed = 10f;
     [SerializeField] float jumpForce = 15f;
     private bool canDoubleJump;
+    private bool canMove = true;
+    [SerializeField] Vector2 jumpDirection = new Vector2(5,15);
 
     [Header("- Collision Info")]
     // Wall
@@ -26,6 +29,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckDistance;
     private bool isGrounded;
 
+    
     [Header("- Facing Direction")]
     private bool facingRight = true;
     private int facingDirection = 1;
@@ -60,12 +64,14 @@ public class PlayerController : MonoBehaviour
 
     private void AnimationController()
     {
-        anim.SetBool("isMoving", GetXVelocity() != 0);
+        anim.SetBool("isMoving", GetXVelocityAxis() != 0);
         anim.SetFloat("yVelocity", rb.velocity.y);
         anim.SetBool("isGrounded", isGrounded);
+        anim.SetBool("isWallSliding", isWallSliding);
+
     }
 
-    private float GetXVelocity(){
+    private float GetXVelocityAxis(){
         return Input.GetAxisRaw("Horizontal");
     }
 
@@ -76,13 +82,22 @@ public class PlayerController : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.Space)){
-            HandleJump();
+            OnJump();
         }
+    }
+
+    private void WallJump()
+    {
+        canMove = false;
+        rb.velocity = new Vector2(jumpDirection.x * -facingDirection, jumpDirection.y);
     }
 
     private void HandleMove()
     {
-        rb.velocity = new Vector2(moveSpeed * GetXVelocity(), rb.velocity.y);
+        if (canMove)
+        {
+            rb.velocity = new Vector2(moveSpeed * GetXVelocityAxis(), rb.velocity.y);
+        }
     }
 
     private void Jump(){
@@ -91,7 +106,11 @@ public class PlayerController : MonoBehaviour
 
     private void FlipController()
     {
-        if (facingRight && GetXVelocity() < 0 || !facingRight && GetXVelocity() > 0) Flip(); // Flip if moving
+        if (facingRight && rb.velocity.x < 0) {
+            Flip();
+        }else if (!facingRight && rb.velocity.x > 0) {
+            Flip();
+        }
 
     }
 
@@ -103,19 +122,30 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void HandleJump(){
-        if (isGrounded){
+    private void OnJump(){
+        if (isWallSliding)
+        {
+            WallJump();
+        }else if (isGrounded)
+        {
             Jump();
-        }else if(canDoubleJump) {
+        }
+        else if(canDoubleJump) {
             Jump();
             canDoubleJump = false;
         }
+
+        canWallSlide = false;
     }
 
     private void CollisionChecks(){
         isGrounded = Physics2D.Raycast(transform.position, Vector2.down,groundCheckDistance,whatIsGround);
         if (isGrounded)
+        {
+            canMove = true;
+            canWallSlide = true;
             canDoubleJump = true;
+        }
         CheckWallCollision();
     }
 
@@ -124,6 +154,7 @@ public class PlayerController : MonoBehaviour
         // Checks if wall detected depending on the facing direction
         isOnWall = Physics2D.Raycast(transform.position, Vector2.right * facingDirection, wallCheckDistance, whatIsWall);
         canWallSlide = CheckIfCanWallSlide();
+        isWallSliding = canWallSlide;
         if (canWallSlide)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.1f);
