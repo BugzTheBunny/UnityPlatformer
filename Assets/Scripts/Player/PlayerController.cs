@@ -88,7 +88,6 @@ public class PlayerController : MonoBehaviour
 
     private void WallJump()
     {
-        canMove = false;
         rb.velocity = new Vector2(jumpDirection.x * -facingDirection, jumpDirection.y);
     }
 
