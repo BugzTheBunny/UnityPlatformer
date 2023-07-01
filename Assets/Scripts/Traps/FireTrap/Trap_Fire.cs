@@ -18,7 +18,6 @@ public class Trap_Fire : Trap
 
         if (transform.parent == null)
         {
-            Debug.Log("has parent");
             InvokeRepeating("FireSwitch",0, repeatRate);
         }
     }

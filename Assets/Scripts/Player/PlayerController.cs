@@ -6,13 +6,13 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {   
     // Components
-    private Animator anim;
-    private Rigidbody2D rb;
+                     private Animator anim;
+                     private Rigidbody2D rb;
 
     [Header("- Move Info")]
     [SerializeField] float moveSpeed = 10f;
-    private bool canDoubleJump;
-    private bool canMove = true;
+                     private bool canDoubleJump;
+                     private bool canMove = true;
 
     [Header("- Jump")]
     [SerializeField] float jumpForce = 15f;
@@ -23,29 +23,31 @@ public class PlayerController : MonoBehaviour
 
     [Header("- Cayote Jump")]
     [SerializeField] private float cayoteJumpTime;
-    private float cayoteJumpTimer;
-    private bool canHaveCayoteJump;
+                     private float cayoteJumpTimer;
+                     private bool canHaveCayoteJump;
 
     [Header("- Collision Info")]
     // Wall
-    [SerializeField] LayerMask whatIsWall;
-    [SerializeField] float wallCheckDistance;
-    private bool isOnWall;
-    private bool canWallSlide;
-    private bool isWallSliding;
-
+    [SerializeField] private LayerMask whatIsWall;
+    [SerializeField] private float wallCheckDistance;
+                     private bool isOnWall;
+                     private bool canWallSlide;
+                     private bool isWallSliding;
     // Ground
-    [SerializeField] LayerMask whatIsGround;
-    [SerializeField] float groundCheckDistance;
-    private bool isGrounded;
+    [SerializeField] private LayerMask whatIsGround;
+    [SerializeField] private float groundCheckDistance;
+                     private bool isGrounded;
+    // Enemy
+    [SerializeField] private Transform enemyCheck;
+    [SerializeField] private float enemyCheckRadius;
 
-    
     [Header("- Facing Direction")]
     private bool facingRight = true;
     private int facingDirection = 1;
 
     [Header("- Knockback")]
     [SerializeField] private Vector2 knockbackDirection;
+    [SerializeField] private float invincibilityDuration = 0.6f;
     private bool isKnocked;
     private bool canBeKnocked = true;
 
@@ -68,7 +70,7 @@ public class PlayerController : MonoBehaviour
         FlipController();
         CollisionChecks();
         InputChecks();
-        HandleMove();
+        DetectEnemies();
 
         jumpBufferTimer -= Time.deltaTime;
         cayoteJumpTimer -= Time.deltaTime;
@@ -92,17 +94,19 @@ public class PlayerController : MonoBehaviour
                 canHaveCayoteJump = false;
                 cayoteJumpTimer = cayoteJumpTime;
             }
-            
+
         }
 
-        if (canWallSlide) 
+        if (canWallSlide)
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x,rb.velocity.y * 0.2f);
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.2f);
         }
 
         HandleMove();
     }
+
+
 
     private void AnimationController()
     {
@@ -189,7 +193,7 @@ public class PlayerController : MonoBehaviour
         canWallSlide = false;
     }
 
-    public void KnockBack(int direction)
+    public void KnockBack(Transform damageTransform)
     {   
         if (!canBeKnocked)
         {
@@ -198,11 +202,24 @@ public class PlayerController : MonoBehaviour
         canBeKnocked = false;
 
         isKnocked = true;
-        
-        rb.velocity = new Vector2(knockbackDirection.x * direction, knockbackDirection.y);
+
+        int hDirection = 0;
+
+        #region Define horizontal direction for knockback
+        if (transform.position.x > damageTransform.position.x)
+        {
+            hDirection = 1;
+        }
+        else if (transform.position.x < damageTransform.position.x)
+        {
+            hDirection = -1;
+        }
+        #endregion
+
+        rb.velocity = new Vector2(knockbackDirection.x * hDirection, knockbackDirection.y);
         
         Invoke("CancelKnockback",0.5f);
-        Invoke("AllowKnockback", 1f);
+        Invoke("AllowKnockback", invincibilityDuration);
 
     }
 
@@ -248,6 +265,25 @@ public class PlayerController : MonoBehaviour
         return isOnWall && rb.velocity.y < 0 ;
     }
 
+    private void DetectEnemies()
+    {
+        Collider2D[] hitedColliders = Physics2D.OverlapCircleAll(enemyCheck.position, enemyCheckRadius);
+
+        foreach (var enemy in hitedColliders)
+        {
+            if (enemy.GetComponent<Enemy>() != null)
+            {
+                if (rb.velocity.y < 0)
+                {
+                    enemy.GetComponent<Enemy>().Damaged();
+                    Jump(jumpForce);
+                    canDoubleJump = true;
+                }
+                
+            }
+        }
+    }
+
     private void SetupInitialComponents()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -264,5 +300,6 @@ public class PlayerController : MonoBehaviour
     private void OnDrawGizmos() {
         Gizmos.DrawLine(transform.position,new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
         Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + wallCheckDistance * facingDirection, transform.position.y));
+        Gizmos.DrawWireSphere(enemyCheck.position, enemyCheckRadius);
     }
 }

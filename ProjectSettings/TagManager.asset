@@ -53,6 +53,9 @@ TagManager:
   - name: TrapOverGround
     uniqueID: 3750640245
     locked: 0
+  - name: Enemies
+    uniqueID: 2754506217
+    locked: 0
   - name: Player
     uniqueID: 753587697
     locked: 0
