@@ -4,11 +4,22 @@ using UnityEngine;
 
 public class Trap : MonoBehaviour
 {
-    private void OnTriggerEnter2D(Collider2D collision)
+    protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Player")
         {
-            Debug.Log("Entered");
+            print("Entered");
+            PlayerController player = collision.GetComponent<PlayerController>();
+            if (player.transform.position.x > transform.position.x)
+            {
+                player.KnockBack(1);
+            } else if (player.transform.position.x < transform.position.x){
+                player.KnockBack(-1);
+
+            } else
+            {
+                player.KnockBack(0);
+            }
 
         }
     }

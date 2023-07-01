@@ -11,10 +11,20 @@ public class PlayerController : MonoBehaviour
 
     [Header("- Move Info")]
     [SerializeField] float moveSpeed = 10f;
-    [SerializeField] float jumpForce = 15f;
     private bool canDoubleJump;
     private bool canMove = true;
+
+    [Header("- Jump")]
+    [SerializeField] float jumpForce = 15f;
+    [SerializeField] float doubleJumpForce = 13f;
     [SerializeField] Vector2 jumpDirection = new Vector2(5,15);
+    [SerializeField] private float jumpBufferTime;
+                     private float jumpBufferTimer;
+
+    [Header("- Cayote Jump")]
+    [SerializeField] private float cayoteJumpTime;
+    private float cayoteJumpTimer;
+    private bool canHaveCayoteJump;
 
     [Header("- Collision Info")]
     // Wall
@@ -34,31 +44,63 @@ public class PlayerController : MonoBehaviour
     private bool facingRight = true;
     private int facingDirection = 1;
 
+    [Header("- Knockback")]
+    [SerializeField] private Vector2 knockbackDirection;
+    private bool isKnocked;
+    private bool canBeKnocked = true;
+
     void Start()
     {
         SetupInitialComponents();
         SetupInitialSettings();
     }
 
-    private void SetupInitialComponents()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-    }
 
-    private void SetupInitialSettings()
-    {
-        // Freezez rotation / roll cause of Z axis.
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-         
-    }
-    // Update is called once per frame
     void Update()
     {
         AnimationController();
+
+        if (isKnocked)
+        {
+            return;
+        }
+
         FlipController();
         CollisionChecks();
         InputChecks();
+        HandleMove();
+
+        jumpBufferTimer -= Time.deltaTime;
+        cayoteJumpTimer -= Time.deltaTime;
+
+        if (isGrounded)
+        {
+            canDoubleJump = true;
+            canMove = true;
+
+            if (jumpBufferTimer > 0)
+            {
+                jumpBufferTimer = -1;
+                Jump(jumpForce);
+            }
+            canHaveCayoteJump = true;
+        }
+        else
+        {
+            if (canHaveCayoteJump)
+            {
+                canHaveCayoteJump = false;
+                cayoteJumpTimer = cayoteJumpTime;
+            }
+            
+        }
+
+        if (canWallSlide) 
+        {
+            isWallSliding = true;
+            rb.velocity = new Vector2(rb.velocity.x,rb.velocity.y * 0.2f);
+        }
+
         HandleMove();
     }
 
@@ -68,6 +110,8 @@ public class PlayerController : MonoBehaviour
         anim.SetFloat("yVelocity", rb.velocity.y);
         anim.SetBool("isGrounded", isGrounded);
         anim.SetBool("isWallSliding", isWallSliding);
+        anim.SetBool("isKnocked", isKnocked);
+
 
     }
 
@@ -89,6 +133,7 @@ public class PlayerController : MonoBehaviour
     private void WallJump()
     {
         rb.velocity = new Vector2(jumpDirection.x * -facingDirection, jumpDirection.y);
+        canDoubleJump = true;
     }
 
     private void HandleMove()
@@ -99,8 +144,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Jump(){
-        rb.velocity = new Vector2(rb.velocity.x,jumpForce);
+    private void Jump(float force){
+        rb.velocity = new Vector2(rb.velocity.x,force);
     }
 
     private void FlipController()
@@ -121,20 +166,54 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void OnJump(){
+    private void OnJump(){ 
+
+        if (!isGrounded)
+            jumpBufferTimer = jumpBufferTime;
+
         if (isWallSliding)
         {
             WallJump();
-        }else if (isGrounded)
+            canDoubleJump= true;
+        }
+        else if (isGrounded || cayoteJumpTimer > 0)
         {
-            Jump();
+            Jump(jumpForce);
         }
         else if(canDoubleJump) {
-            Jump();
+            canMove = true;
             canDoubleJump = false;
+            Jump(doubleJumpForce);
         }
 
         canWallSlide = false;
+    }
+
+    public void KnockBack(int direction)
+    {   
+        if (!canBeKnocked)
+        {
+            return;
+        }
+        canBeKnocked = false;
+
+        isKnocked = true;
+        
+        rb.velocity = new Vector2(knockbackDirection.x * direction, knockbackDirection.y);
+        
+        Invoke("CancelKnockback",0.5f);
+        Invoke("AllowKnockback", 1f);
+
+    }
+
+    private void CancelKnockback()
+    {
+        isKnocked= false;
+    }
+
+    private void AllowKnockback()
+    {
+        canBeKnocked = true;
     }
 
     private void CollisionChecks(){
@@ -167,6 +246,19 @@ public class PlayerController : MonoBehaviour
             return false;
         }
         return isOnWall && rb.velocity.y < 0 ;
+    }
+
+    private void SetupInitialComponents()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+    }
+
+    private void SetupInitialSettings()
+    {
+        // Freezez rotation / roll cause of Z axis.
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
     }
 
     private void OnDrawGizmos() {
