@@ -18,6 +18,7 @@ public class Enemy : MonoBehaviour
     protected bool wallDetected;
     protected bool groundDetected;
 
+    [SerializeField] protected float speed;
     protected bool isMovingOnX;
     protected bool isMovingOnY;
 
@@ -25,13 +26,14 @@ public class Enemy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        FreezOnZ();
     }
 
-    public void OnCollisionEnter2D(Collision2D collision)
+    public void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.collider.GetComponent<PlayerController>() != null)
+        if (collision.GetComponent<PlayerController>() != null)
         {
-            PlayerController player = collision.collider.GetComponent<PlayerController>();
+            PlayerController player = collision.GetComponent<PlayerController>();
             player.KnockBack(transform);
         }
     }

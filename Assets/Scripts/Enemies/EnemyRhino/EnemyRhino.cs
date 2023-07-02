@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyMushroom : Enemy
+public class EnemyRhino : Enemy
 {
-
     protected override void Start()
     {
         base.Start();
@@ -13,18 +12,32 @@ public class EnemyMushroom : Enemy
     protected override void Update()
     {
         base.Update();
-        rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
         CollisionChecks();
-        OnXAxisMove();
-        OnYAxisMove();
+        rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
 
- 
     }
+
+    protected override void CollisionChecks()
+    {
+        base.CollisionChecks();
+    }
+
+    protected override void Flip()
+    {
+        base.Flip();
+    }
+
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+    }
+
     protected override void OnXAxisMove()
     {
         base.OnXAxisMove();
         if (wallDetected || !groundDetected)
         {
+            Debug.Log("Detected!");
             Flip();
         }
     }
