@@ -6,10 +6,9 @@ public class Enemy : MonoBehaviour
 {
     protected Rigidbody2D rb;
     protected Animator anim;
-
-    [SerializeField] protected int facingDirection = 1;
     
     [Header("- Detectors")]
+    [SerializeField] protected LayerMask whatToIgnore;
     [SerializeField] protected LayerMask whatIsGround;
     [SerializeField] protected float groundCheckDistance;
     [SerializeField] protected float wallCheckDistance;
@@ -18,11 +17,17 @@ public class Enemy : MonoBehaviour
     protected bool wallDetected;
     protected bool groundDetected;
 
+    [Header("- Movement")]
+    [SerializeField] protected int facingDirection = 1;
     [SerializeField] protected float speed;
+    [SerializeField] protected float idleTime = 2;
+                     protected float idleTimeTimer;
+    protected bool canMove = true;
+
+
     protected bool isMovingOnX;
     protected bool isMovingOnY;
-
-    public bool invincible;
+    [HideInInspector] public bool invincible;
 
     protected virtual void Start()
     {
@@ -40,16 +45,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    protected virtual void Update()
-    {
-        CheckAxistMovement();
-    }
-
-    public void Damaged()
+    public virtual void Damaged()
     {
         if (!invincible)
         {
+            canMove = false;
             anim.SetTrigger("isHitted");
+
         }
     }
 
@@ -83,18 +85,32 @@ public class Enemy : MonoBehaviour
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 
-    private void CheckAxistMovement()
+    protected virtual void CheckAxistMovement()
     {
         isMovingOnX = rb.velocity.x != 0;
         isMovingOnY = rb.velocity.y != 0;
 
     }
 
-    protected virtual void OnXAxisMove()
+    protected virtual void Wander()
     {
-    }
+        if (idleTimeTimer < 0 && canMove)
+            rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
+        else
+        {
+            rb.velocity = new Vector2(0, rb.velocity.y);
+        }
 
-    protected virtual void OnYAxisMove()
-    {
+
+        idleTimeTimer -= Time.deltaTime;
+
+        if (wallDetected || !groundDetected)
+        {
+            idleTimeTimer = idleTime;
+            Flip();
+        }
     }
+    protected virtual void OnXAxisMove(){}
+
+    protected virtual void OnYAxisMove(){}
 }

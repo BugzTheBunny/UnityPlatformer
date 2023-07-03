@@ -10,27 +10,17 @@ public class EnemyMushroom : Enemy
         base.Start();
     }
 
-    protected override void Update()
+    private void Update()
     {
-        base.Update();
-        rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
+        CheckAxistMovement();
         CollisionChecks();
         OnXAxisMove();
-
- 
+        Wander();
     }
     protected override void OnXAxisMove()
     {
+        base.OnXAxisMove();
         anim.SetBool("isMoving", isMovingOnX);
-        if (wallDetected || !groundDetected)
-        {
-            Flip();
-        }
-    }
-
-    protected override void OnYAxisMove()
-    {
-        base.OnYAxisMove();
     }
 
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class EnemyRhino : Enemy
 {
-    [SerializeField] private LayerMask whatToIgnore;
        
     [SerializeField] float agroSpeed = 8;
     [SerializeField] float stunTime;
@@ -19,66 +18,54 @@ public class EnemyRhino : Enemy
         invincible = true;
     }
 
-    protected override void Update()
+    private void Update()
     {
+        OnXAxisMove();
+        CollisionChecks();
+        AnimatorCotroller();
+        CheckAxistMovement();
+        RhinoStateManager();
 
+    }
+
+    private void RhinoStateManager()
+    {
         playerDetection = Physics2D.Raycast(wallCheck.position, Vector2.right * facingDirection, 35, ~whatToIgnore);
         if (playerDetection.collider.GetComponent<PlayerController>())
-        {
             isAggresive = true;
-        }
         if (!isAggresive)
-        {
-            base.Update();
-            rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
-
-            if (wallDetected || !groundDetected)
-            {
-                Flip();
-            }
-        }
+            Wander();
         else
-        {
-            rb.velocity = new Vector2((agroSpeed) * facingDirection, rb.velocity.y);
-            if (wallDetected && invincible)
-            {
-                invincible = false;
-                stunTimeTimer = stunTime;
-            }
+            OnAgrro();
+    }
 
-            if (stunTimeTimer <= 0 && !invincible)
-            {
-                invincible = true;
-                Flip();
-                isAggresive = false;
-            }
-            stunTimeTimer -= Time.deltaTime;
+    private void OnAgrro()
+    {
+        rb.velocity = new Vector2((agroSpeed) * facingDirection, rb.velocity.y);
+        if (wallDetected && invincible)
+        {
+            invincible = false;
+            stunTimeTimer = stunTime;
         }
 
-        anim.SetBool("invincible", invincible);
-        AnimatorCotroller();
+        if (stunTimeTimer <= 0 && !invincible)
+        {
+            invincible = true;
+            Flip();
+            isAggresive = false;
+        }
+        stunTimeTimer -= Time.deltaTime;
     }
 
     private void AnimatorCotroller()
     {
-        CollisionChecks();
-        OnXAxisMove();
-    }
-
-    protected override void CollisionChecks()
-    {
-        base.CollisionChecks();
-    }
-
-    protected override void Flip()
-    {
-        base.Flip();
+        anim.SetFloat("xVelocity", rb.velocity.x);
+        anim.SetBool("invincible", invincible);
     }
 
     protected override void OnXAxisMove()
     {
-        anim.SetFloat("xVelocity", rb.velocity.x);
-
+        base.OnXAxisMove();
     }
 
     protected override void OnDrawGizmos()
