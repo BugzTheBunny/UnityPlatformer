@@ -22,6 +22,8 @@ public class Enemy : MonoBehaviour
     protected bool isMovingOnX;
     protected bool isMovingOnY;
 
+    public bool invincible;
+
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -45,7 +47,10 @@ public class Enemy : MonoBehaviour
 
     public void Damaged()
     {
-        anim.SetTrigger("isHitted");
+        if (!invincible)
+        {
+            anim.SetTrigger("isHitted");
+        }
     }
 
     protected virtual void Flip()
@@ -87,7 +92,6 @@ public class Enemy : MonoBehaviour
 
     protected virtual void OnXAxisMove()
     {
-        anim.SetBool("isMoving", isMovingOnX);
     }
 
     protected virtual void OnYAxisMove()

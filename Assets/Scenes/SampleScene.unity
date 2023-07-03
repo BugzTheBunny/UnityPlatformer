@@ -20457,10 +20457,16 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   groundCheckDistance: 1.5
-  wallCheckDistance: 1.5
+  wallCheckDistance: 1.21
   groundCheck: {fileID: 1698527047}
   wallCheck: {fileID: 320193415}
   speed: 8
+  invincible: 0
+  whatIsPlayer:
+    serializedVersion: 2
+    m_Bits: 256
+  agroSpeed: 15
+  stunTime: 1
 --- !u!4 &905914483 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2734600056028596165, guid: 432dced0c623d504f9ec386f83ff72c9, type: 3}

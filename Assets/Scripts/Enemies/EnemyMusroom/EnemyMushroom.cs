@@ -16,13 +16,12 @@ public class EnemyMushroom : Enemy
         rb.velocity = new Vector2(speed * facingDirection, rb.velocity.y);
         CollisionChecks();
         OnXAxisMove();
-        OnYAxisMove();
 
  
     }
     protected override void OnXAxisMove()
     {
-        base.OnXAxisMove();
+        anim.SetBool("isMoving", isMovingOnX);
         if (wallDetected || !groundDetected)
         {
             Flip();

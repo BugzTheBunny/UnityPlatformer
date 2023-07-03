@@ -273,11 +273,19 @@ public class PlayerController : MonoBehaviour
         {
             if (enemy.GetComponent<Enemy>() != null)
             {
+
+                Enemy newEnemy = enemy.GetComponent<Enemy>();
+
+                if (newEnemy.invincible) {
+                    return;
+                }
+
                 if (rb.velocity.y < 0)
                 {
                     enemy.GetComponent<Enemy>().Damaged();
                     Jump(jumpForce);
                     canDoubleJump = true;
+                    newEnemy.Damaged();
                 }
                 
             }
