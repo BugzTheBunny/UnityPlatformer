@@ -12,7 +12,6 @@ public class Enemy_Radish : Enemy
     [SerializeField] private float ciellingDistance;
     [SerializeField] private float aggresiveTime = 5.0f;
     [SerializeField] private float aggresiveTimeTimer;
-    private bool aggresive;
     
     protected override void Start()
     {

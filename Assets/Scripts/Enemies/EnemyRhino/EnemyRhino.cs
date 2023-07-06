@@ -10,7 +10,6 @@ public class EnemyRhino : Enemy
                      private float stunTimeTimer;
 
     private RaycastHit2D playerDetection;
-    private bool isAggresive;
 
     protected override void Start()
     {
@@ -32,8 +31,8 @@ public class EnemyRhino : Enemy
     {
         playerDetection = Physics2D.Raycast(wallCheck.position, Vector2.right * facingDirection, 35, ~whatToIgnore);
         if (playerDetection.collider.GetComponent<PlayerController>())
-            isAggresive = true;
-        if (!isAggresive)
+            aggresive = true;
+        if (!aggresive)
             Wander();
         else
             OnAgrro();
@@ -52,7 +51,7 @@ public class EnemyRhino : Enemy
         {
             invincible = true;
             Flip();
-            isAggresive = false;
+            aggresive = false;
         }
         stunTimeTimer -= Time.deltaTime;
     }
