@@ -20821,7 +20821,7 @@ MonoBehaviour:
   groundCheck: {fileID: 0}
   wallCheck: {fileID: 0}
   facingDirection: 1
-  speed: 0
+  speed: 5
   idleTime: 2
   invincible: 0
   activeTime: 2
@@ -20854,7 +20854,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1015450373}
-  m_BodyType: 0
+  m_BodyType: 2
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
